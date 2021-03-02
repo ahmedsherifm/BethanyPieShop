@@ -1,8 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using BethanysPieShop.Interfaces;
+using BethanysPieShop.Models;
 using BethanysPieShop.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 
@@ -21,15 +20,15 @@ namespace BethanysPieShop.Controllers
             _categoryRepository = categoryRepository;
         }
 
-        public ViewResult List()
-        {
-            var piesListViewModel = new PiesListViewModel
-            {
-                Pies = _pieRepository.AllPies,
-                CurrentCategory = "Cheese Cakes"
-            };
-            return View(piesListViewModel);
-        }
+        //public ViewResult List()
+        //{
+        //    var piesListViewModel = new PiesListViewModel
+        //    {
+        //        Pies = _pieRepository.AllPies,
+        //        CurrentCategory = "Cheese Cakes"
+        //    };
+        //    return View(piesListViewModel);
+        //}
 
         public IActionResult Details(int id)
         {
@@ -38,6 +37,30 @@ namespace BethanysPieShop.Controllers
                 return NotFound();
 
             return View(pie);
+        }
+
+        public ViewResult List(string category)
+        {
+            IEnumerable<Pie> pies;
+            string currentCategory;
+
+            if (string.IsNullOrEmpty(category))
+            {
+                pies = _pieRepository.AllPies.OrderBy(p => p.PieId);
+                currentCategory = "All Pies";
+            }
+            else
+            {
+                pies = _pieRepository.AllPies.Where(p => p.Category.Name == category)
+                    .OrderBy(p => p.PieId);
+                currentCategory = _categoryRepository.AllCategories.FirstOrDefault(c => c.Name == category)?.Name;
+            }
+
+            return View(new PiesListViewModel
+            {
+                Pies = pies,
+                CurrentCategory = currentCategory
+            });
         }
     }
 }
